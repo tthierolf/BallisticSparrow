@@ -5,14 +5,6 @@
     android:paddingTop="@dimen/activity_vertical_margin"
     android:paddingBottom="@dimen/activity_vertical_margin" tools:context=".MainActivity">
 
-    <Button
-        android:layout_width="wrap_content"
-        android:layout_height="wrap_content"
-        android:text="Up"
-        android:id="@+id/up_button"
-        android:layout_above="@+id/right_button"
-        android:layout_toStartOf="@+id/right_button" />
-
     <Switch
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -25,38 +17,53 @@
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Down"
-        android:id="@+id/down_button"
-        android:layout_above="@+id/fire_button"
-        android:layout_centerHorizontal="true"
-        android:layout_marginBottom="87dp" />
+        android:text="UP"
+        android:width="100dp"
+        android:height="100dp"
+        android:id="@+id/up_button"
+        android:layout_above="@+id/left_button"
+        android:layout_centerHorizontal="true" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
-        android:text="Left"
+        android:text="DOWN"
+        android:width="100dp"
+        android:height="100dp"
+        android:id="@+id/down_button"
+        android:layout_below="@+id/left_button"
+        android:layout_centerHorizontal="true"/>
+
+    <Button
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="LEFT"
+        android:width="100dp"
+        android:height="100dp"
         android:id="@+id/left_button"
-        android:layout_alignTop="@+id/right_button"
+        android:layout_centerVertical="true"
         android:layout_toStartOf="@+id/up_button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="RIGHT"
+        android:width="100dp"
+        android:height="100dp"
         android:id="@+id/right_button"
-        android:layout_above="@+id/down_button"
-        android:layout_toEndOf="@+id/down_button" />
+        android:layout_centerVertical="true"
+        android:layout_toEndOf="@+id/up_button" />
 
     <Button
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
         android:text="FIRE!"
         android:id="@+id/fire_button"
-        android:height="100dp"
+        android:height="75dp"
         android:width="200dp"
         android:layout_alignParentBottom="true"
-        android:layout_toEndOf="@+id/safety_switch"
-        android:layout_marginBottom="37dp" />
+        android:layout_marginBottom="10dp"
+        android:layout_centerHorizontal="true"/>
 
     <NumberPicker
         android:layout_width="wrap_content"

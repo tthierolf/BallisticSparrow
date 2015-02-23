@@ -9,10 +9,13 @@ import android.view.View;
 import android.widget.*;
 
 
-public class MainActivity extends ActionBarActivity {
+public class MainActivity extends ActionBarActivity implements MessageReceiver{
 
     private Button mUpButton, mDownButton, mLeftButton, mRightButton, mFireButton;
     private boolean mBarrelMoving = false, mTurretMoving = false;
+    private volatile boolean mReadyToFire = false;
+    private int mLastShotVelocity = 0;
+    private double mVoltage = 0;
     private Switch mSafety;
     private NumberPicker mPowerLevelPicker;
     private CommunicationManager mCommunicationManager;
@@ -22,8 +25,21 @@ public class MainActivity extends ActionBarActivity {
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
+        init();
     }
 
+    @Override
+    protected void onResume() {
+        super.onResume();
+        mCommunicationManager.connectToWeaponSystem();
+    }
+
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        mCommunicationManager.removeReceiver(this);
+
+    }
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -49,6 +65,7 @@ public class MainActivity extends ActionBarActivity {
 
     private void init(){
         mCommunicationManager = new CommunicationManager(this);
+        mCommunicationManager.registerReceiver(this);
         mUpButton = (Button)findViewById(R.id.up_button);
         mDownButton = (Button)findViewById(R.id.down_button);
         mLeftButton = (Button)findViewById(R.id.left_button);
@@ -59,6 +76,15 @@ public class MainActivity extends ActionBarActivity {
 
         mPowerLevelPicker.setMaxValue(6);
         mPowerLevelPicker.setMinValue(1);
+
+        mSafety.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
+
+            @Override
+            public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
+                mFireButton.setEnabled(!isChecked && mReadyToFire);
+            }
+
+        });
 
         mUpButton.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -168,13 +194,27 @@ public class MainActivity extends ActionBarActivity {
             }
         });
 
+        mFireButton.setEnabled(false);
         mFireButton.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(mSafety.isChecked()){
-                    mCommunicationManager.fire(mPowerLevelPicker.getValue());
-                }
+                mCommunicationManager.fire(mPowerLevelPicker.getValue());
             }
         });
+    }
+
+    private void readyToFire(){
+        mReadyToFire = true;
+        mFireButton.setEnabled(mReadyToFire && !mSafety.isChecked());
+    }
+
+    public void receiveMessage(String msg){
+        if(msg.contains("READY")){
+            readyToFire();
+        } else if(msg.contains("SHOT_FPS")){
+            mLastShotVelocity = Integer.parseInt(msg.substring(msg.indexOf('(')+1, msg.indexOf(')')));
+        } else if(msg.contains("VOLTS")){
+            mVoltage = Double.parseDouble(msg.substring(msg.indexOf('(')+1, msg.indexOf(')')));
+        }
     }
 }

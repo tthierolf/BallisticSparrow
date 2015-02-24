@@ -209,11 +209,11 @@ public class MainActivity extends ActionBarActivity implements MessageReceiver{
     }
 
     public void receiveMessage(String msg){
-        if(msg.contains("READY")){
+        if(msg.contains("RD(0)")){
             readyToFire();
-        } else if(msg.contains("SHOT_FPS")){
+        } else if(msg.contains("FPS")){
             mLastShotVelocity = Integer.parseInt(msg.substring(msg.indexOf('(')+1, msg.indexOf(')')));
-        } else if(msg.contains("VOLTS")){
+        } else if(msg.contains("VTS")){
             mVoltage = Double.parseDouble(msg.substring(msg.indexOf('(')+1, msg.indexOf(')')));
         }
     }

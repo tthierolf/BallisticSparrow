@@ -3,6 +3,7 @@ package blindmanballistics.ballisticsparrow;
 import android.bluetooth.*;
 import android.content.Context;
 import android.os.Handler;
+import android.util.Log;
 
 import java.io.*;
 import java.util.ArrayList;
@@ -44,6 +45,7 @@ public class CommunicationManager {
     }
 
     public boolean connectToWeaponSystem(){
+        mDevice = null;
         for(BluetoothDevice device : mBluetoothManager.getAdapter().getBondedDevices()){
             if(device.getName().equalsIgnoreCase("blindmanballistics")){
                 mDevice = device;
@@ -52,8 +54,12 @@ public class CommunicationManager {
         }
         if(mDevice != null) {
             try {
+                if (mSocket != null){
+                    mSocket.close();
+                }
                 mSocket = mDevice.createRfcommSocketToServiceRecord(mDevice.getUuids()[0].getUuid());
                 mSocket.connect();
+                Log.d("Bluetooth", "Socket connected to " + mSocket.getRemoteDevice());
                 mOutputStream = mSocket.getOutputStream();
                 mInputStream = mSocket.getInputStream();
                 beginListenForData();
@@ -83,6 +89,7 @@ public class CommunicationManager {
                 msg.append(String.format("%02d", command.length()+1));
                 msg.append(command);
                 msg.append(ETX);
+                Log.d("Bluetooth", "Sent message: " + msg);
                 byte[] data = msg.toString().getBytes();
                 mOutputStream.write(data);
             }
@@ -116,19 +123,20 @@ public class CommunicationManager {
                             for(int i=0;i<bytesAvailable;i++)
                             {
                                 byte b = packetBytes[i];
+                                Log.d("Bluetooth RX", ""+b);
                                 if(b == ETX)
                                 {
                                     byte[] encodedBytes = new byte[readBufferPosition];
                                     System.arraycopy(readBuffer, 0, encodedBytes, 0, encodedBytes.length);
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
-
+                                    Log.d("Bluetooth", "Received message: " + data);
                                     handler.post(new Runnable()
                                     {
                                         public void run()
                                         {
                                             for(MessageReceiver rec : mReceivers){
-                                                rec.receiveMessage(data.substring(3, data.length()-1));
+                                                rec.receiveMessage(data.substring(3, data.length()));
                                             };
                                         }
                                     });
@@ -152,43 +160,43 @@ public class CommunicationManager {
     }
 
     public void rotateLeft(){
-        sendCommand("RL");
+        sendCommand("RL(0)");
     }
 
     public void rotateRight(){
-        sendCommand("RR");
+        sendCommand("RR(0)");
     }
 
     public void stopRotation(){
-        sendCommand("RS");
+        sendCommand("RS(0)");
     }
 
     public void incrementRotateRight(){
-        sendCommand("IRR");
+        sendCommand("IRR(0)");
     }
 
     public void incrementRotateLeft(){
-        sendCommand("IRL");
+        sendCommand("IRL(0)");
     }
 
     public void raiseBarrel(){
-        sendCommand("BU");
+        sendCommand("BU(0)");
     }
 
     public void lowerBarrel(){
-        sendCommand("BD");
+        sendCommand("BD(0)");
     }
 
     public void stopBarrel(){
-        sendCommand("BS");
+        sendCommand("BS(0)");
     }
 
     public void incrementRaiseBarrel(){
-        sendCommand("IBU");
+        sendCommand("IBU(0)");
     }
 
     public void incrementLowerBarrel(){
-        sendCommand("IBD");
+        sendCommand("IBD(0)");
     }
 
     public void fire(int power){
@@ -196,10 +204,10 @@ public class CommunicationManager {
     }
 
     public void reload(){
-        sendCommand("RG");
+        sendCommand("RG(0)");
     }
 
     public void queryPower(){
-        sendCommand("RV");
+        sendCommand("RV(0)");
     }
 }

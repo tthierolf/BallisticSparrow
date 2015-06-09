@@ -1,5 +1,7 @@
 package blindmanballistics.ballisticsparrow;
 
+import android.os.AsyncTask;
+import android.os.Looper;
 import android.support.v7.app.ActionBarActivity;
 import android.os.Bundle;
 import android.view.Menu;
@@ -25,13 +27,13 @@ public class MainActivity extends ActionBarActivity implements MessageReceiver{
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_main);
-        init();
     }
 
     @Override
     protected void onResume() {
         super.onResume();
-        mCommunicationManager.connectToWeaponSystem();
+        init();
+        new ConnectToWeaponSystemTask().execute();
     }
 
     @Override
@@ -74,7 +76,7 @@ public class MainActivity extends ActionBarActivity implements MessageReceiver{
         mSafety = (Switch)findViewById(R.id.safety_switch);
         mPowerLevelPicker = (NumberPicker)findViewById(R.id.power_level_picker);
 
-        mPowerLevelPicker.setMaxValue(6);
+        mPowerLevelPicker.setMaxValue(11);
         mPowerLevelPicker.setMinValue(1);
 
         mSafety.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
@@ -215,6 +217,15 @@ public class MainActivity extends ActionBarActivity implements MessageReceiver{
             mLastShotVelocity = Integer.parseInt(msg.substring(msg.indexOf('(')+1, msg.indexOf(')')));
         } else if(msg.contains("VTS")){
             mVoltage = Double.parseDouble(msg.substring(msg.indexOf('(')+1, msg.indexOf(')')));
+        }
+    }
+
+    private class ConnectToWeaponSystemTask extends AsyncTask<Void, Void, Void> {
+        @Override
+        protected Void doInBackground(Void... args) {
+            Looper.prepare();
+            mCommunicationManager.connectToWeaponSystem();
+            return null;
         }
     }
 }

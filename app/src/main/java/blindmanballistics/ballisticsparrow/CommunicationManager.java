@@ -1,7 +1,9 @@
 package blindmanballistics.ballisticsparrow;
 
+import android.app.Activity;
 import android.bluetooth.*;
 import android.content.Context;
+import android.os.AsyncTask;
 import android.os.Handler;
 import android.util.Log;
 
@@ -19,7 +21,7 @@ public class CommunicationManager {
     private BluetoothSocket mSocket;
     private OutputStream mOutputStream;
     private InputStream mInputStream;
-    private Context mContext;
+    private Activity mContext;
     private final char STX = 0x02;
     private final char ETX = 0x03;
     private Thread workerThread;
@@ -28,7 +30,7 @@ public class CommunicationManager {
     private volatile boolean stopWorker;
     private List<MessageReceiver> mReceivers;
 
-    public CommunicationManager(Context c){
+    public CommunicationManager(Activity c){
         mContext = c;
         mBluetoothManager = (BluetoothManager) c.getSystemService(c.BLUETOOTH_SERVICE);
         mReceivers = new ArrayList<MessageReceiver>();
@@ -73,6 +75,10 @@ public class CommunicationManager {
 
     public void shutdown(){
         try {
+            stopWorker = true;
+            if(workerThread != null) {
+                workerThread.interrupt();
+            }
             if(mSocket.isConnected()) {
                 mSocket.close();
             }
@@ -123,7 +129,7 @@ public class CommunicationManager {
                             for(int i=0;i<bytesAvailable;i++)
                             {
                                 byte b = packetBytes[i];
-                                Log.d("Bluetooth RX", ""+b);
+                                //Log.d("Bluetooth RX", ""+b);
                                 if(b == ETX)
                                 {
                                     byte[] encodedBytes = new byte[readBufferPosition];
@@ -131,10 +137,8 @@ public class CommunicationManager {
                                     final String data = new String(encodedBytes, "US-ASCII");
                                     readBufferPosition = 0;
                                     Log.d("Bluetooth", "Received message: " + data);
-                                    handler.post(new Runnable()
-                                    {
-                                        public void run()
-                                        {
+                                    mContext.runOnUiThread(new Runnable() {
+                                        public void run() {
                                             for(MessageReceiver rec : mReceivers){
                                                 rec.receiveMessage(data.substring(3, data.length()));
                                             };
